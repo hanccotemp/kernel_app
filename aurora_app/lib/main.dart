@@ -17,6 +17,13 @@ Color hexColor(String? hex, Color fallback) {
   return v == null ? fallback : Color(v);
 }
 
+// Personajes de prueba (acceso rápido). Cada uno con fecha distinta (signo distinto).
+const List<Map<String, String>> kPersonasPrueba = [
+  {'nombre': 'Julio', 'fecha': '1990-08-10'},
+  {'nombre': 'Juan', 'fecha': '1985-12-05'},
+  {'nombre': 'María', 'fecha': '1993-04-25'},
+];
+
 // nombre -> usuarioId estable y POR APP (u_sina_percy, u_aurora_percy: distintos).
 String idDe(String appId, String n) {
   final base = n.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_').replaceAll(RegExp(r'^_|_$'), '');
@@ -85,6 +92,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Color get _color => hexColor(widget.cfg['piel']?['color_primario'], const Color(0xFF1F6F5C));
   String get _icono => widget.cfg['piel']?['icono'] ?? '✨';
   String get _nombreApp => widget.cfg['nombre'] ?? kAppId;
+
+  void _entrarComo(Map<String, String> p) {
+    _nombre.text = p['nombre'] ?? '';
+    if (_esAstro) _fecha.text = p['fecha'] ?? '';
+    _entrar();
+  }
 
   Future<void> _entrar() async {
     final nombre = _nombre.text.trim();
@@ -158,6 +171,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : const Text('Entrar'),
                 ),
+              ),
+              const SizedBox(height: 20),
+              const Text('Pruebas (acceso rápido):', style: TextStyle(color: Colors.black45, fontSize: 12)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: kPersonasPrueba
+                    .map((p) => OutlinedButton(
+                          onPressed: _cargando ? null : () => _entrarComo(p),
+                          style: OutlinedButton.styleFrom(side: BorderSide(color: _color), foregroundColor: _color),
+                          child: Text(p['nombre']!),
+                        ))
+                    .toList(),
               ),
             ]),
           ),

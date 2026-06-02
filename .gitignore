@@ -1,0 +1,18 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (NO subir claves de API)
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

@@ -32,7 +32,9 @@ import { t } from "../core/i18n.js";
  * @param {string} params.pregunta    texto del usuario
  * @param {string} [params.lang]      idioma de salida (override de la pref.)
  * @param {boolean}[params.conVoz]    pedir TTS (requiere add-on de voz)
- * @param {string} [params.provider]  forzar proveedor (debug)
+ * @param {string} [params.provider]  forzar proveedor (debug / interfaz)
+ * @param {string} [params.apiKey]    key del proveedor por petición (interfaz). Si falta, usa .env
+ * @param {string} [params.model]     modelo por petición (override del default del proveedor)
  */
 export async function responder(params) {
   const t0 = Date.now();
@@ -87,6 +89,8 @@ export async function responder(params) {
         nombreUsuario: usuario.nombre,
         knowledge: conocimiento,
         maxTokens: 400,
+        apiKey: params.apiKey, // viene de la interfaz; no se persiste
+        model: params.model,
       },
     });
   } catch (err) {

@@ -6,9 +6,10 @@
 export const deepseekProvider = {
   name: "deepseek",
   async complete({ system, messages, meta = {} }) {
-    const key = process.env.DEEPSEEK_API_KEY;
-    if (!key) throw new Error("Falta DEEPSEEK_API_KEY");
-    const model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+    // La key puede venir de la interfaz (meta.apiKey, por petición) o del entorno.
+    const key = meta.apiKey || process.env.DEEPSEEK_API_KEY;
+    if (!key) throw new Error("Falta DEEPSEEK_API_KEY (pégala en la interfaz o ponla en .env)");
+    const model = meta.model || process.env.DEEPSEEK_MODEL || "deepseek-chat";
 
     const res = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",

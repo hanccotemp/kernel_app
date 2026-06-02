@@ -5,9 +5,9 @@
 export const openaiProvider = {
   name: "openai",
   async complete({ system, messages, meta = {} }) {
-    const key = process.env.OPENAI_API_KEY;
-    if (!key) throw new Error("Falta OPENAI_API_KEY");
-    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+    const key = meta.apiKey || process.env.OPENAI_API_KEY;
+    if (!key) throw new Error("Falta OPENAI_API_KEY (pégala en la interfaz o ponla en .env)");
+    const model = meta.model || process.env.OPENAI_MODEL || "gpt-4o-mini";
 
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",

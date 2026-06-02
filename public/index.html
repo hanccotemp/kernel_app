@@ -5,22 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Núcleo AI-first · Cliente de demostración</title>
 <style>
-  :root { --bg:#0e0f14; --panel:#171922; --line:#262a36; --txt:#e7e9ef; --mut:#8a90a2; --acc:#6C4AB6; }
+  :root { --bg:#0e0f14; --panel:#171922; --line:#262a36; --txt:#e7e9ef; --mut:#8a90a2; --acc:#6C4AB6; --ok:#3fb950; --warn:#d29922; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--txt); }
   header { padding:16px 20px; border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
   header h1 { font-size:15px; margin:0; font-weight:600; letter-spacing:.2px; }
   header .sub { color:var(--mut); font-size:12px; }
   .controls { margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  select { background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:13px; }
+  select, input[type=text], input[type=password] { background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:13px; }
   main { max-width:760px; margin:0 auto; padding:20px; }
-  #chat { display:flex; flex-direction:column; gap:12px; min-height:50vh; }
+
+  /* Panel de proveedor de IA */
+  .ai-bar { max-width:760px; margin:14px auto 0; padding:12px 14px; background:var(--panel); border:1px solid var(--line); border-radius:12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .ai-bar .grp { display:flex; flex-direction:column; gap:3px; }
+  .ai-bar label { font-size:10px; text-transform:uppercase; letter-spacing:.4px; color:var(--mut); }
+  .ai-bar input[type=password], .ai-bar input[type=text] { min-width:230px; font-family:ui-monospace,monospace; }
+  .ai-bar .modelo { min-width:160px; }
+  #aiStatus { font-size:11px; font-family:ui-monospace,monospace; margin-left:auto; }
+  #aiStatus.ok { color:var(--ok); } #aiStatus.warn { color:var(--warn); } #aiStatus.mut { color:var(--mut); }
+  .hint { max-width:760px; margin:6px auto 0; color:var(--mut); font-size:11px; }
+  .hint a { color:var(--acc); }
+
+  #chat { display:flex; flex-direction:column; gap:12px; min-height:46vh; }
   .msg { padding:11px 14px; border-radius:12px; max-width:82%; font-size:14px; line-height:1.5; white-space:pre-wrap; }
   .user { align-self:flex-end; background:var(--acc); color:#fff; border-bottom-right-radius:4px; }
   .ia { align-self:flex-start; background:var(--panel); border:1px solid var(--line); border-bottom-left-radius:4px; }
+  .err { align-self:flex-start; background:#2a1416; border:1px solid #5c2326; color:#ff9ba1; }
   .meta { align-self:flex-start; color:var(--mut); font-size:11px; font-family:ui-monospace,monospace; margin-top:-6px; }
   .composer { display:flex; gap:10px; margin-top:18px; position:sticky; bottom:0; padding:14px 0; background:linear-gradient(transparent,var(--bg) 30%); }
-  input[type=text] { flex:1; background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:12px 14px; font-size:14px; }
+  .composer input[type=text] { flex:1; padding:12px 14px; font-size:14px; border-radius:10px; }
   button { background:var(--acc); color:#fff; border:0; border-radius:10px; padding:12px 18px; font-size:14px; cursor:pointer; font-weight:600; }
   button:disabled { opacity:.5; cursor:wait; }
   label.voz { color:var(--mut); font-size:12px; display:flex; gap:5px; align-items:center; }
@@ -41,6 +54,25 @@
     <label class="voz"><input type="checkbox" id="voz" /> voz</label>
   </div>
 </header>
+
+<!-- Panel de proveedor de IA: elige el motor real y pega tu API key -->
+<div class="ai-bar">
+  <div class="grp">
+    <label for="provider">Motor de IA</label>
+    <select id="provider"></select>
+  </div>
+  <div class="grp" id="keyGrp" style="display:none">
+    <label for="apiKey">API key</label>
+    <input type="password" id="apiKey" placeholder="pega tu key aquí…" autocomplete="off" />
+  </div>
+  <div class="grp modelo" id="modelGrp" style="display:none">
+    <label for="model">Modelo (opcional)</label>
+    <input type="text" id="model" placeholder="default del proveedor" autocomplete="off" />
+  </div>
+  <span id="aiStatus" class="mut">…</span>
+</div>
+<div class="hint" id="aiHint"></div>
+
 <main>
   <div id="chat"></div>
   <div class="composer">
@@ -51,9 +83,16 @@
 
 <script>
 const USERS = { sina: [["u_ana","Ana (premium+voz)"]], aurora: [["u_joao","João (free)"]] };
+const KEYS_URL = {
+  deepseek: "https://platform.deepseek.com/api_keys",
+  openai: "https://platform.openai.com/api-keys",
+  anthropic: "https://console.anthropic.com/settings/keys",
+};
 const chat = document.getElementById("chat");
 const $ = (id) => document.getElementById(id);
+let PROVIDERS = [];
 
+// ── Apps ────────────────────────────────────────────────────────────────
 async function loadApps() {
   const apps = await (await fetch("/api/apps")).json();
   $("app").innerHTML = apps.map(a => `<option value="${a.id}">${a.piel?.icono||""} ${a.nombre} — ${a.vertical}</option>`).join("");
@@ -63,12 +102,57 @@ function syncUsers() {
   const app = $("app").value;
   $("user").innerHTML = (USERS[app]||[]).map(([id,n]) => `<option value="${id}">${n}</option>`).join("");
 }
-$("app").addEventListener("change", () => { syncUsers(); });
+$("app").addEventListener("change", syncUsers);
 
+// ── Proveedores de IA ─────────────────────────────────────────────────────
+async function loadProviders() {
+  PROVIDERS = await (await fetch("/api/providers")).json();
+  $("provider").innerHTML = PROVIDERS.map(p => `<option value="${p.id}">${p.label}</option>`).join("");
+  const saved = localStorage.getItem("ai_provider");
+  if (saved && PROVIDERS.some(p => p.id === saved)) $("provider").value = saved;
+  syncProvider();
+}
+function curProvider() { return PROVIDERS.find(p => p.id === $("provider").value); }
+
+function syncProvider() {
+  const p = curProvider();
+  localStorage.setItem("ai_provider", p.id);
+  $("keyGrp").style.display = p.necesitaKey ? "" : "none";
+  $("modelGrp").style.display = p.necesitaKey ? "" : "none";
+  // Restaura key/modelo guardados para ESTE proveedor (solo en tu navegador)
+  $("apiKey").value = localStorage.getItem("ai_key_" + p.id) || "";
+  $("model").value = localStorage.getItem("ai_model_" + p.id) || "";
+  $("model").placeholder = p.modeloDefault || "default del proveedor";
+  renderStatus();
+  // Pista con enlace para obtener la key
+  if (p.necesitaKey && KEYS_URL[p.id]) {
+    $("aiHint").innerHTML = `🔒 Tu key se guarda solo en este navegador y se envía únicamente a tu servidor local — nunca se almacena en el servidor ni se sube a git. ¿No tienes una? <a href="${KEYS_URL[p.id]}" target="_blank" rel="noopener">Obtén una key de ${p.id}</a>.`;
+  } else {
+    $("aiHint").textContent = "El motor mock responde sin API key ni costo (respuestas simuladas, ideal para ver el flujo).";
+  }
+}
+function renderStatus() {
+  const p = curProvider(), st = $("aiStatus");
+  if (!p.necesitaKey) { st.className = "mut"; st.textContent = "● sin key (mock)"; return; }
+  const tieneUI = !!$("apiKey").value.trim();
+  if (tieneUI) { st.className = "ok"; st.textContent = "● key lista (este navegador)"; }
+  else if (p.keyEnEntorno) { st.className = "ok"; st.textContent = "● key en .env del servidor"; }
+  else { st.className = "warn"; st.textContent = "● falta API key"; }
+}
+$("provider").addEventListener("change", syncProvider);
+$("apiKey").addEventListener("input", () => {
+  localStorage.setItem("ai_key_" + curProvider().id, $("apiKey").value.trim());
+  renderStatus();
+});
+$("model").addEventListener("input", () => {
+  localStorage.setItem("ai_model_" + curProvider().id, $("model").value.trim());
+});
+
+// ── Chat ───────────────────────────────────────────────────────────────
 function add(cls, text) {
   const d = document.createElement("div");
   d.className = "msg " + cls; d.textContent = text; chat.appendChild(d);
-  chat.scrollIntoView({ block: "end" }); window.scrollTo(0, document.body.scrollHeight);
+  window.scrollTo(0, document.body.scrollHeight);
   return d;
 }
 function addMeta(text) {
@@ -79,30 +163,47 @@ async function send() {
   const pregunta = $("input").value.trim();
   if (!pregunta) return;
   const appId = $("app").value, usuarioId = $("user").value, lang = $("lang").value, conVoz = $("voz").checked;
+  const p = curProvider();
+  const apiKey = $("apiKey").value.trim();
+  const model = $("model").value.trim();
+
+  if (p.necesitaKey && !apiKey && !p.keyEnEntorno) {
+    add("err", `El motor "${p.label}" necesita una API key. Pégala arriba o usa el motor mock.`);
+    return;
+  }
+
   add("user", pregunta); $("input").value = ""; $("send").disabled = true;
   try {
     const res = await fetch(`/api/apps/${appId}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-App-Id": appId, "X-User-Id": usuarioId },
-      body: JSON.stringify({ pregunta, lang, conVoz }),
+      body: JSON.stringify({
+        pregunta, lang, conVoz,
+        provider: p.id,
+        apiKey: apiKey || undefined,   // si está vacío, el servidor usa .env
+        model: model || undefined,
+      }),
     });
     const r = await res.json();
     if (r.ok) {
       add("ia", r.texto);
       const k = r.meta.conocimiento;
-      addMeta(`${r.meta.personaje} · ${r.meta.provider} · ${r.meta.lang} · ${r.meta.ms}ms · conocimiento: ${JSON.stringify(k)}${r.voz ? " · 🔊 voz lista" : ""}${r.meta.bloqueadoPorLimites ? " · ⚠ filtrado" : ""}`);
+      const tk = r.meta.tokens ? ` · ${(r.meta.tokens.prompt||"?")}+${(r.meta.tokens.completion||"?")} tok` : "";
+      addMeta(`${r.meta.personaje} · 🤖 ${r.meta.provider} · ${r.meta.lang} · ${r.meta.ms}ms${tk} · conocimiento: ${JSON.stringify(k)}${r.voz ? " · 🔊 voz lista" : ""}${r.meta.bloqueadoPorLimites ? " · ⚠ filtrado" : ""}`);
     } else {
-      add("ia", r.texto || r.error);
+      add("err", (r.texto ? r.texto + "\n\n" : "") + "⚠ " + (r.error || "Error desconocido"));
     }
   } catch (e) {
-    add("ia", "Error de red: " + e.message);
+    add("err", "Error de red: " + e.message);
   } finally {
     $("send").disabled = false; $("input").focus();
   }
 }
 $("send").addEventListener("click", send);
 $("input").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+
 loadApps();
+loadProviders();
 </script>
 </body>
 </html>

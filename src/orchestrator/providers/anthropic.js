@@ -9,9 +9,9 @@
 export const anthropicProvider = {
   name: "anthropic",
   async complete({ system, messages, meta = {} }) {
-    const key = process.env.ANTHROPIC_API_KEY;
-    if (!key) throw new Error("Falta ANTHROPIC_API_KEY");
-    const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+    const key = meta.apiKey || process.env.ANTHROPIC_API_KEY;
+    if (!key) throw new Error("Falta ANTHROPIC_API_KEY (pégala en la interfaz o ponla en .env)");
+    const model = meta.model || process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

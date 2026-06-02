@@ -19,17 +19,18 @@ export async function inyectarConocimiento(personaje, ctx) {
 
   if (fuente === "none") return { tipo: "none" };
 
-  const compute = () => {
-    if (fuente === "bible") return inyectarBiblia(ctx);
-    if (fuente === "ephemeris") return inyectarEfemerides(ctx);
-    return { tipo: "none" };
-  };
+  // Biblia: trae el texto (YouVersion o respaldo) y cachea internamente.
+  if (fuente === "bible") return inyectarBiblia(ctx);
 
-  // El cacheKey lo define el propio inyector; computamos una vez para saberlo.
-  const fresh = compute();
-  if (fresh.cacheable && fresh.cacheKey) {
-    const { value } = await cache.wrap(fresh.cacheKey, TTL_DIA, async () => fresh);
-    return value;
+  // Efemérides: cómputo determinista; cacheamos el mapa del día.
+  if (fuente === "ephemeris") {
+    const fresh = inyectarEfemerides(ctx);
+    if (fresh.cacheable && fresh.cacheKey) {
+      const { value } = await cache.wrap(fresh.cacheKey, TTL_DIA, async () => fresh);
+      return value;
+    }
+    return fresh;
   }
-  return fresh;
+
+  return { tipo: "none" };
 }

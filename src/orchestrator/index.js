@@ -158,7 +158,7 @@ function extraerContexto(personaje, usuario, pregunta) {
 }
 
 function resumenConocimiento(k) {
-  if (k.tipo === "bible") return { fuente: "bible", tema: k.tema, ref: k.versiculo?.referencia };
+  if (k.tipo === "bible") return { fuente: "bible", tema: k.tema, ref: k.versiculo?.referencia, texto_de: k.fuente_texto, aviso: k.aviso };
   if (k.tipo === "ephemeris") return { fuente: "ephemeris", sol: k.mapa?.sol, incompleto: !!k.incompleto };
   return { fuente: "none" };
 }

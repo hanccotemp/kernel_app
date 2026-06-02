@@ -242,6 +242,26 @@ class DB {
     this.usuarioRoles.insert({ usuario_id: editorAurora.id, rol_id: rolEditorAurora.id, app_id: "aurora" });
   }
 
+  /**
+   * Asegura un usuario final en una app (login estilo "invitado"): si no existe,
+   * lo crea con plan free. Persiste vía write-through. Cada (app+usuario) tendrá
+   * su propia conversación/memoria aislada.
+   */
+  ensureUsuarioFinal(appId, id, nombre) {
+    const existente = this.usuarios.get(id);
+    if (existente) return existente;
+    const u = this.usuarios.insert({
+      id,
+      app_id: appId,
+      nombre: nombre || id,
+      email: `${id}@demo.app`,
+      idioma: this.getAppConfig(appId)?.idioma_default || "es",
+      perfil: {},
+    });
+    this.suscripciones.insert({ app_id: appId, usuario_id: id, plan: "free", addons: [], estado: "activo", vence: null });
+    return u;
+  }
+
   getUsuario(appId, usuarioId) {
     const u = this.usuarios.get(usuarioId);
     if (!u) return undefined;

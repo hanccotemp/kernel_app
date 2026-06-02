@@ -39,13 +39,36 @@ export function getVersiculo(lang, libro, capitulo, versiculo) {
   return { referencia: `${b.libros[libro]} ${capitulo}:${versiculo}`, texto };
 }
 
-// Curación editorial: tema emocional → referencia (libro, capítulo, versículo).
+// Curación editorial: tema emocional → VARIOS versículos (rotan por turno para
+// no repetir). [libro, capítulo, versículo] sobre la Biblia local completa.
 const REFERENCIAS = {
-  ansiedad:  { libro: 50, cap: 4,   ver: 6 },  // Filipenses 4:6
-  miedo:     { libro: 23, cap: 41,  ver: 10 }, // Isaías 41:10
-  duelo:     { libro: 19, cap: 34,  ver: 18 }, // Salmos 34:18
-  gratitud:  { libro: 19, cap: 100, ver: 4 },  // Salmos 100:4
-  esperanza: { libro: 24, cap: 29,  ver: 11 }, // Jeremías 29:11
+  ansiedad: [
+    { libro: 50, cap: 4, ver: 6 },   // Filipenses 4:6
+    { libro: 40, cap: 6, ver: 34 },  // Mateo 6:34
+    { libro: 19, cap: 55, ver: 22 }, // Salmos 55:22
+    { libro: 60, cap: 5, ver: 7 },   // 1 Pedro 5:7
+  ],
+  miedo: [
+    { libro: 23, cap: 41, ver: 10 }, // Isaías 41:10
+    { libro: 6, cap: 1, ver: 9 },    // Josué 1:9
+    { libro: 19, cap: 23, ver: 4 },  // Salmos 23:4
+  ],
+  duelo: [
+    { libro: 19, cap: 34, ver: 18 }, // Salmos 34:18
+    { libro: 40, cap: 5, ver: 4 },   // Mateo 5:4
+    { libro: 66, cap: 21, ver: 4 },  // Apocalipsis 21:4
+  ],
+  gratitud: [
+    { libro: 19, cap: 100, ver: 4 }, // Salmos 100:4
+    { libro: 52, cap: 5, ver: 18 },  // 1 Tesalonicenses 5:18
+    { libro: 51, cap: 3, ver: 15 },  // Colosenses 3:15
+  ],
+  esperanza: [
+    { libro: 24, cap: 29, ver: 11 }, // Jeremías 29:11
+    { libro: 45, cap: 15, ver: 13 }, // Romanos 15:13
+    { libro: 23, cap: 40, ver: 31 }, // Isaías 40:31
+    { libro: 19, cap: 42, ver: 11 }, // Salmos 42:11
+  ],
 };
 
 const DEFAULT_TEMA = "esperanza";
@@ -67,15 +90,24 @@ function detectarTema(texto = "") {
 }
 
 /**
- * @param {{ pregunta: string, lang: string, perfil?: any }} ctx
+ * @param {{ pregunta: string, lang: string, perfil?: any, turno?: number }} ctx
  * @returns {{tipo:"bible", tema:string, versiculo:{referencia,texto}, fuente_texto:string}}
  */
 export function inyectarBiblia(ctx) {
   const lang = ["es", "pt", "en"].includes(ctx.lang) ? ctx.lang : "es";
   const tema = detectarTema(`${ctx.pregunta} ${ctx.perfil?.momento_espiritual || ""}`);
-  const ref = REFERENCIAS[tema];
-  const versiculo = getVersiculo(lang, ref.libro, ref.cap, ref.ver);
+  const opciones = REFERENCIAS[tema];
+  const idx = (Number.isInteger(ctx.turno) ? ctx.turno : 0) % opciones.length; // rota por turno
 
+  // Toma el versículo del turno; si faltara en la fuente, prueba los demás.
+  let ref = opciones[idx];
+  let versiculo = getVersiculo(lang, ref.libro, ref.cap, ref.ver);
+  if (!versiculo) {
+    for (const alt of opciones) {
+      versiculo = getVersiculo(lang, alt.libro, alt.cap, alt.ver);
+      if (versiculo) { ref = alt; break; }
+    }
+  }
   if (!versiculo) {
     return { tipo: "bible", tema, incompleto: true, motivo: "versículo no encontrado en la fuente", versiculo: null };
   }
@@ -85,6 +117,6 @@ export function inyectarBiblia(ctx) {
     versiculo,
     fuente_texto: `dominio_publico:${getBiblia(lang).version}`,
     cacheable: true,
-    cacheKey: `aurora:verso:${tema}:${lang}`,
+    cacheKey: `aurora:verso:${tema}:${lang}:${idx}`,
   };
 }

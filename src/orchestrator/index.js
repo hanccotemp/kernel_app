@@ -55,9 +55,15 @@ export async function responder(params) {
   const contextoUsuario = extraerContexto(personaje, usuario, pregunta);
   trace.push("2. contexto del usuario reunido");
 
+  // memoria: conversación del par (app+usuario). El turno (nº de preguntas
+  // previas) sirve para rotar el versículo y no repetir.
+  const conv = memoria.getConversacion(appId, usuarioId);
+  const turno = memoria.historial(conv.id, 9999).filter((m) => m.role === "user").length;
+  memoria.guardarMensaje(conv.id, "user", pregunta);
+
   // ── Paso 3: inyectar conocimiento curado (datos reales) ─────────────────
   const conocimiento = await inyectarConocimiento(personaje, {
-    pregunta, lang, perfil: usuario.perfil,
+    pregunta, lang, perfil: usuario.perfil, turno,
   });
   trace.push(`3. conocimiento inyectado (${conocimiento.tipo})`);
 
@@ -66,9 +72,6 @@ export async function responder(params) {
   const imagenes = Array.isArray(params.imagenes) ? params.imagenes : [];
   if (imagenes.length) trace.push(`3b. multimodal: ${imagenes.length} imagen(es)`);
 
-  // memoria + historial
-  const conv = memoria.getConversacion(appId, usuarioId);
-  memoria.guardarMensaje(conv.id, "user", pregunta);
   const resumen = memoria.resumir(conv.id);
   const historial = memoria.historial(conv.id, 8);
 

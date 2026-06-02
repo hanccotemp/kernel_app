@@ -36,9 +36,9 @@ const VERSICULOS = {
     en: { referencia: "Psalm 100:4", texto: "Enter into his gates with thanksgiving, and into his courts with praise: be thankful unto him, and bless his name." },
   },
   esperanza: {
-    es: { referencia: "Jeremías 29:11", texto: "Porque yo sé los pensamientos que tengo acerca de vosotros, pensamientos de paz, y no de mal, para daros el fin que esperáis." },
-    pt: { referencia: "Jeremias 29:11", texto: "Porque eu bem sei os pensamentos que penso de vós, pensamentos de paz, e não de mal, para vos dar o fim que esperais." },
-    en: { referencia: "Jeremiah 29:11", texto: "For I know the thoughts that I think toward you, thoughts of peace, and not of evil, to give you an expected end." },
+    es: { referencia: "Jeremías 29:11", texto: "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis." },
+    pt: { referencia: "Jeremias 29:11", texto: "Porque eu bem sei os pensamentos que penso de vós, diz o Senhor, pensamentos de paz, e não de mal, para vos dar o fim que esperais." },
+    en: { referencia: "Jeremiah 29:11", texto: "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end." },
   },
 };
 

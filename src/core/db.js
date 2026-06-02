@@ -247,16 +247,22 @@ class DB {
    * lo crea con plan free. Persiste vía write-through. Cada (app+usuario) tendrá
    * su propia conversación/memoria aislada.
    */
-  ensureUsuarioFinal(appId, id, nombre) {
+  ensureUsuarioFinal(appId, id, nombre, perfil) {
     const existente = this.usuarios.get(id);
-    if (existente) return existente;
+    if (existente) {
+      // Si llega perfil nuevo (p. ej. fecha de nacimiento para Sina), lo fusiona.
+      if (perfil && Object.keys(perfil).length) {
+        return this.usuarios.update(id, { perfil: { ...existente.perfil, ...perfil } });
+      }
+      return existente;
+    }
     const u = this.usuarios.insert({
       id,
       app_id: appId,
       nombre: nombre || id,
       email: `${id}@demo.app`,
       idioma: this.getAppConfig(appId)?.idioma_default || "es",
-      perfil: {},
+      perfil: perfil || {},
     });
     this.suscripciones.insert({ app_id: appId, usuario_id: id, plan: "free", addons: [], estado: "activo", vence: null });
     return u;

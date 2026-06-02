@@ -96,9 +96,9 @@ app.get("/api/apps/:appId/config", tenant, (req, res) => {
 // Login "invitado": crea/recupera el usuario por nombre. Cada usuario tendrá
 // su propia conversación/memoria con la app (aislada por app+usuario).
 app.post("/api/apps/:appId/login", tenant, (req, res) => {
-  const { usuarioId, nombre } = req.body || {};
+  const { usuarioId, nombre, perfil } = req.body || {};
   if (!usuarioId || !String(usuarioId).trim()) return res.status(400).json({ error: "Falta 'usuarioId'" });
-  const u = db.ensureUsuarioFinal(req.appId, String(usuarioId).trim(), nombre);
+  const u = db.ensureUsuarioFinal(req.appId, String(usuarioId).trim(), nombre, perfil);
   res.json({ usuarioId: u.id, nombre: u.nombre, appId: req.appId });
 });
 

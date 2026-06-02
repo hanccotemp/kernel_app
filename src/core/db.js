@@ -162,6 +162,16 @@ class DB {
       this.permisos.insert({ rol_id: editor.id, objeto_id: objUsuarios.id, ver: true, agregar: false, editar: false, eliminar: false });
     }
 
+    // Usuario demo genérico por app: cualquier app nueva (soltar un JSON) queda
+    // probable de inmediato con u_demo_<appId>, sin tocar el motor.
+    for (const a of this.apps.all()) {
+      const id = `u_demo_${a.id}`;
+      if (!this.usuarios.get(id)) {
+        this.usuarios.insert({ id, app_id: a.id, nombre: "Demo", email: `demo@${a.id}.app`, idioma: this.getAppConfig(a.id)?.idioma_default || "es", perfil: {} });
+        this.suscripciones.insert({ app_id: a.id, usuario_id: id, plan: "premium", addons: ["voz"], estado: "trial", vence: "2026-12-31" });
+      }
+    }
+
     // Un usuario de back-office con rol editor en Aurora (ejemplo)
     const editorAurora = this.usuarios.insert({
       id: "bo_maria", nombre: "María (editora)", email: "maria@nucleo.app", activo: true, backoffice: true,

@@ -1,0 +1,28 @@
+{
+  "dataset": "legal",
+  "descripcion": "Datos de EJEMPLO, no autoritativos, para el banco de pruebas. En producción se reemplaza por una fuente oficial validada por la entidad correspondiente.",
+  "licencia": "demo",
+  "sin_resultado": {
+    "es": "No tengo ese trámite en mi fuente. Te sugiero verificarlo en la entidad oficial correspondiente.",
+    "pt": "Não tenho esse procedimento na minha fonte. Sugiro verificá-lo no órgão oficial correspondente.",
+    "en": "I don't have that procedure in my source. I suggest checking the relevant official agency."
+  },
+  "items": [
+    {
+      "id": "pasaporte",
+      "temas": ["pasaporte", "passport", "passaporte"],
+      "ref": "Trámite de ejemplo: Pasaporte",
+      "es": { "pasos": ["Reservar cita en el portal oficial", "Pagar la tasa", "Acudir con documento de identidad y foto"], "requisitos": ["Documento de identidad vigente", "Pago de tasa"], "plazo": "Variable según país" },
+      "pt": { "pasos": ["Agendar no portal oficial", "Pagar a taxa", "Comparecer com documento e foto"], "requisitos": ["Documento válido", "Pagamento da taxa"], "plazo": "Variável por país" },
+      "en": { "pasos": ["Book an appointment on the official portal", "Pay the fee", "Attend with ID and photo"], "requisitos": ["Valid ID", "Fee payment"], "plazo": "Varies by country" }
+    },
+    {
+      "id": "licencia_conducir",
+      "temas": ["licencia", "conducir", "brevete", "carnet", "license", "driving", "habilitação", "carteira"],
+      "ref": "Trámite de ejemplo: Licencia de conducir",
+      "es": { "pasos": ["Aprobar examen médico", "Aprobar examen teórico", "Aprobar examen práctico"], "requisitos": ["Edad mínima", "Examen médico vigente"], "plazo": "Variable según país" },
+      "pt": { "pasos": ["Aprovar exame médico", "Aprovar prova teórica", "Aprovar prova prática"], "requisitos": ["Idade mínima", "Exame médico válido"], "plazo": "Variável por país" },
+      "en": { "pasos": ["Pass the medical exam", "Pass the theory test", "Pass the road test"], "requisitos": ["Minimum age", "Valid medical exam"], "plazo": "Varies by country" }
+    }
+  ]
+}

@@ -84,10 +84,10 @@ app.get("/api/apps/:appId/config", tenant, (req, res) => {
 
 app.post("/api/apps/:appId/chat", tenant, auth, async (req, res) => {
   try {
-    const { pregunta, lang, conVoz, provider, apiKey, model } = req.body || {};
+    const { pregunta, lang, conVoz, provider, apiKey, model, imagenes } = req.body || {};
     if (!pregunta || !pregunta.trim()) return res.status(400).json({ error: "Falta 'pregunta'" });
     const r = await responder({
-      appId: req.appId, usuarioId: req.usuarioId, pregunta, lang, conVoz, provider, apiKey, model,
+      appId: req.appId, usuarioId: req.usuarioId, pregunta, lang, conVoz, provider, apiKey, model, imagenes,
     });
     res.status(r.ok ? 200 : 502).json(r);
   } catch (err) {
@@ -108,12 +108,12 @@ wss.on("connection", (ws) => {
     } catch {
       return ws.send(JSON.stringify({ tipo: "error", error: "JSON inválido" }));
     }
-    const { appId, usuarioId, pregunta, lang, conVoz, provider, apiKey, model } = msg;
+    const { appId, usuarioId, pregunta, lang, conVoz, provider, apiKey, model, imagenes } = msg;
     if (!appId || !usuarioId || !pregunta) {
       return ws.send(JSON.stringify({ tipo: "error", error: "Faltan appId, usuarioId o pregunta" }));
     }
     try {
-      const r = await responder({ appId, usuarioId, pregunta, lang, conVoz, provider, apiKey, model });
+      const r = await responder({ appId, usuarioId, pregunta, lang, conVoz, provider, apiKey, model, imagenes });
       ws.send(JSON.stringify({ tipo: "respuesta", ...r }));
     } catch (err) {
       ws.send(JSON.stringify({ tipo: "error", error: err.message }));

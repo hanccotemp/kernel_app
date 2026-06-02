@@ -1,0 +1,28 @@
+{
+  "dataset": "oficios",
+  "descripcion": "Guías técnicas de EJEMPLO con énfasis en seguridad, para el banco de pruebas. No reemplazan a un técnico certificado.",
+  "licencia": "demo",
+  "sin_resultado": {
+    "es": "No tengo una guía para eso en mi fuente. Si hay riesgo, detente y llama a un profesional certificado.",
+    "pt": "Não tenho um guia para isso. Se houver risco, pare e chame um profissional certificado.",
+    "en": "I don't have a guide for that. If there's risk, stop and call a certified professional."
+  },
+  "items": [
+    {
+      "id": "electrico",
+      "temas": ["luz", "eléctric", "electric", "tomacorriente", "enchufe", "tablero", "breaker", "tomada", "fio"],
+      "ref": "Guía: problema eléctrico básico",
+      "es": { "diagnostico": ["Verificar si saltó el interruptor (breaker)", "Revisar si afecta a un solo punto o a todo"], "seguridad": "Corta la energía desde el tablero antes de revisar. Alta tensión = llama a un electricista certificado." },
+      "pt": { "diagnostico": ["Verificar se o disjuntor desarmou", "Ver se afeta um ponto ou tudo"], "seguridad": "Desligue a energia no quadro antes de checar. Alta tensão = chame um eletricista certificado." },
+      "en": { "diagnostico": ["Check if the breaker tripped", "See if it affects one point or everything"], "seguridad": "Cut power at the panel before inspecting. High voltage = call a certified electrician." }
+    },
+    {
+      "id": "gas",
+      "temas": ["gas", "fuga", "olor a gas", "vazamento", "leak"],
+      "ref": "Guía: olor o fuga de gas (PRIORIDAD SEGURIDAD)",
+      "es": { "diagnostico": ["No enciendas nada", "Cierra la llave de paso", "Ventila el ambiente"], "seguridad": "PELIGRO: no uses interruptores ni llamas. Sal del lugar y llama a la empresa de gas / bomberos." },
+      "pt": { "diagnostico": ["Não acenda nada", "Feche o registro", "Ventile o ambiente"], "seguridad": "PERIGO: não use interruptores nem chamas. Saia do local e chame a empresa de gás / bombeiros." },
+      "en": { "diagnostico": ["Don't turn anything on", "Shut the gas valve", "Ventilate the area"], "seguridad": "DANGER: no switches or flames. Leave and call the gas company / fire department." }
+    }
+  ]
+}

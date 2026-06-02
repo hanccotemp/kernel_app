@@ -1,0 +1,28 @@
+{
+  "dataset": "entrevistas",
+  "descripcion": "Banco de preguntas y buenas prácticas de RR.HH. de EJEMPLO para el banco de pruebas.",
+  "licencia": "demo",
+  "sin_resultado": {
+    "es": "No tengo un banco específico para esa área; usaré preguntas generales de entrevista.",
+    "pt": "Não tenho um banco específico para essa área; usarei perguntas gerais de entrevista.",
+    "en": "I don't have a specific bank for that area; I'll use general interview questions."
+  },
+  "items": [
+    {
+      "id": "tecnico",
+      "temas": ["program", "desarroll", "software", "técnic", "tecnic", "developer", "engineer", "ti", "it"],
+      "ref": "Banco: entrevista técnica (software)",
+      "es": { "preguntas": ["Cuéntame de un proyecto del que estés orgulloso", "¿Cómo depuras un bug difícil?", "Explica un concepto técnico a alguien no técnico"], "buenas_practicas": ["Pide ejemplos concretos (método STAR)", "Evalúa razonamiento, no solo la respuesta"] },
+      "pt": { "preguntas": ["Conte sobre um projeto do qual se orgulha", "Como você depura um bug difícil?", "Explique um conceito técnico a alguém leigo"], "buenas_practicas": ["Peça exemplos concretos (método STAR)", "Avalie o raciocínio, não só a resposta"] },
+      "en": { "preguntas": ["Tell me about a project you're proud of", "How do you debug a hard bug?", "Explain a technical concept to a non-technical person"], "buenas_practicas": ["Ask for concrete examples (STAR method)", "Assess reasoning, not just the answer"] }
+    },
+    {
+      "id": "ventas",
+      "temas": ["venta", "comercial", "sales", "vendas", "account"],
+      "ref": "Banco: entrevista de ventas",
+      "es": { "preguntas": ["Cuéntame de una venta difícil que cerraste", "¿Cómo manejas una objeción de precio?", "¿Cómo priorizas tu cartera de clientes?"], "buenas_practicas": ["Busca métricas concretas (cuotas, % logrado)", "Evalúa escucha y manejo de objeciones"] },
+      "pt": { "preguntas": ["Conte sobre uma venda difícil que fechou", "Como lida com uma objeção de preço?", "Como prioriza sua carteira de clientes?"], "buenas_practicas": ["Procure métricas concretas (metas, % atingido)", "Avalie escuta e tratamento de objeções"] },
+      "en": { "preguntas": ["Tell me about a tough deal you closed", "How do you handle a price objection?", "How do you prioritize your client portfolio?"], "buenas_practicas": ["Look for concrete metrics (quota, % achieved)", "Assess listening and objection handling"] }
+    }
+  ]
+}

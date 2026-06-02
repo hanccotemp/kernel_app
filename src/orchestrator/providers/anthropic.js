@@ -13,6 +13,21 @@ export const anthropicProvider = {
     if (!key) throw new Error("Falta ANTHROPIC_API_KEY (pégala en la interfaz o ponla en .env)");
     const model = meta.model || process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
 
+    // Multimodal (capacidad reutilizable): adjunta imágenes al último msg de usuario.
+    const msgs = messages.map((m) => ({ role: m.role, content: m.content }));
+    if (meta.imagenes?.length) {
+      for (let i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i].role !== "user") continue;
+        const blocks = [{ type: "text", text: msgs[i].content }];
+        for (const img of meta.imagenes) {
+          if (img.base64) blocks.push({ type: "image", source: { type: "base64", media_type: img.mediaType || "image/jpeg", data: img.base64 } });
+          else if (img.url) blocks.push({ type: "image", source: { type: "url", url: img.url } });
+        }
+        msgs[i] = { role: "user", content: blocks };
+        break;
+      }
+    }
+
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -25,7 +40,7 @@ export const anthropicProvider = {
         max_tokens: meta.maxTokens || 400,
         temperature: meta.temperature ?? 0.7,
         system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        messages: msgs,
       }),
     });
     if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);

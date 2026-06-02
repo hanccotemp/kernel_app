@@ -17,6 +17,7 @@ export const mockProvider = {
     const lang = meta.lang || "es";
     const nombre = meta.nombreUsuario || "";
     const fuente = meta.knowledge?.tipo;
+    const imgNota = meta.imagenes?.length ? ` [recibí ${meta.imagenes.length} imagen(es) y las tomaría en cuenta]` : "";
 
     let cuerpo;
     if (fuente === "bible" && meta.knowledge?.versiculo) {
@@ -42,7 +43,7 @@ export const mockProvider = {
     }
 
     return {
-      text: cuerpo,
+      text: cuerpo + imgNota,
       provider: "mock",
       tokens: { prompt: estimate(system + pregunta), completion: estimate(cuerpo) },
     };

@@ -1,27 +1,30 @@
 /**
  * Inyector de conocimiento (dispatcher) — Arquitectura §2, paso 3.
  *
- * Lee la Capa 3 del personaje ("fuente": bible | ephemeris | none) y trae los
- * datos duros desde la fuente correcta. Cachea lo repetible (versículo/mapa del
- * día) vía la capa de caché.
+ * Lee la Capa 3 del personaje ("fuente": bible | ephemeris | corpus | none) y
+ * trae los datos duros desde la fuente correcta. Cachea lo repetible.
  *
- * Agregar una app nueva con otra fuente (ej. "tarot", "ciclo") = sumar un
- * inyector aquí y declararlo en su personaje. El orquestador no cambia.
+ * "corpus" es el inyector GENÉRICO: una app nueva de texto+conocimiento curado
+ * (legal, banco de preguntas, guías…) se agrega SOLO por configuración
+ * (fuente:"corpus", dataset:"x") + su archivo de datos, sin tocar este motor.
  */
 import { inyectarBiblia } from "./bible.js";
 import { inyectarEfemerides } from "./ephemeris.js";
+import { inyectarCorpus } from "./corpus.js";
 import { cache } from "../../core/cache.js";
 
 const TTL_DIA = 60 * 60 * 12; // 12 h
 
 export async function inyectarConocimiento(personaje, ctx) {
-  const fuente = personaje?.capa3_conocimiento_curado?.fuente || "none";
+  const cap3 = personaje?.capa3_conocimiento_curado || {};
+  const fuente = cap3.fuente || "none";
 
   if (fuente === "none") return { tipo: "none" };
 
   const fresh =
     fuente === "bible" ? inyectarBiblia(ctx) :
     fuente === "ephemeris" ? inyectarEfemerides(ctx) :
+    fuente === "corpus" ? inyectarCorpus(ctx, cap3) :
     { tipo: "none" };
 
   // Cacheamos lo repetible (versículo / mapa del día).

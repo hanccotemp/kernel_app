@@ -35,6 +35,7 @@ import { t } from "../core/i18n.js";
  * @param {string} [params.provider]  forzar proveedor (debug / interfaz)
  * @param {string} [params.apiKey]    key del proveedor por petición (interfaz). Si falta, usa .env
  * @param {string} [params.model]     modelo por petición (override del default del proveedor)
+ * @param {Array<{base64?:string,mediaType?:string,url?:string}>} [params.imagenes]  entrada multimodal (capacidad reutilizable)
  */
 export async function responder(params) {
   const t0 = Date.now();
@@ -60,6 +61,11 @@ export async function responder(params) {
   });
   trace.push(`3. conocimiento inyectado (${conocimiento.tipo})`);
 
+  // Entrada multimodal (capacidad reutilizable): se anota para el prompt y se
+  // pasa al proveedor. La soporta cualquier app que la habilite por config.
+  const imagenes = Array.isArray(params.imagenes) ? params.imagenes : [];
+  if (imagenes.length) trace.push(`3b. multimodal: ${imagenes.length} imagen(es)`);
+
   // memoria + historial
   const conv = memoria.getConversacion(appId, usuarioId);
   memoria.guardarMensaje(conv.id, "user", pregunta);
@@ -74,6 +80,7 @@ export async function responder(params) {
     memoria: resumen,
     lang,
     nombreUsuario: usuario.nombre,
+    imagenes: imagenes.length,
   });
   trace.push("4. prompt construido");
 
@@ -91,6 +98,7 @@ export async function responder(params) {
         maxTokens: 400,
         apiKey: params.apiKey, // viene de la interfaz; no se persiste
         model: params.model,
+        imagenes, // entrada multimodal (capacidad reutilizable)
       },
     });
   } catch (err) {
@@ -134,6 +142,7 @@ export async function responder(params) {
       lang,
       bloqueadoPorLimites: filtrado.bloqueado,
       conocimiento: resumenConocimiento(conocimiento),
+      multimodal: imagenes.length ? { imagenes: imagenes.length } : undefined,
       tokens: salida.tokens,
       ms: Date.now() - t0,
       conversacionId: conv.id,
@@ -160,5 +169,6 @@ function extraerContexto(personaje, usuario, pregunta) {
 function resumenConocimiento(k) {
   if (k.tipo === "bible") return { fuente: "bible", tema: k.tema, ref: k.versiculo?.referencia, texto_de: k.fuente_texto, aviso: k.aviso };
   if (k.tipo === "ephemeris") return { fuente: "ephemeris", sol: k.mapa?.sol, incompleto: !!k.incompleto };
+  if (k.tipo === "corpus") return { fuente: "corpus", dataset: k.dataset, ref: k.ref, encontrado: k.encontrado, texto_de: k.fuente_texto };
   return { fuente: "none" };
 }

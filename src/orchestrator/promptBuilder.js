@@ -12,7 +12,7 @@
  */
 import { t } from "../core/i18n.js";
 
-export function construirPrompt({ personaje, contextoUsuario, conocimiento, memoria, lang, nombreUsuario }) {
+export function construirPrompt({ personaje, contextoUsuario, conocimiento, memoria, lang, nombreUsuario, imagenes = 0 }) {
   const c1 = personaje.capa1_identidad;
   const c4 = personaje.capa4_limites;
   const c5 = personaje.capa5_formato;
@@ -49,6 +49,10 @@ export function construirPrompt({ personaje, contextoUsuario, conocimiento, memo
     partes.push(`MEMORIA DE CONVERSACIONES PREVIAS: ${memoria}`);
   }
 
+  if (imagenes > 0) {
+    partes.push(`ENTRADA MULTIMODAL: el usuario adjuntó ${imagenes} imagen(es). Obsérvala(s) y orienta a partir de lo que veas; si no se aprecia bien, pídela de nuevo. No inventes lo que no se ve.`);
+  }
+
   return partes.join("\n\n");
 }
 
@@ -71,6 +75,15 @@ function renderConocimiento(k) {
     if (k.incompleto) return `Mapa natal no disponible (${k.motivo}). Pide con amabilidad la fecha/hora/lugar de nacimiento.`;
     const m = k.mapa;
     return `Sol: ${m.sol}; Luna: ${m.luna}; Ascendente: ${m.ascendente}; tránsito clave de hoy: ${m.transito_clave}.`;
+  }
+  if (k.tipo === "corpus") {
+    if (!k.encontrado) {
+      return `No hay dato en la fuente curada para esta consulta. NO inventes; di que no está disponible y deriva a la fuente/entidad oficial. (${k.nota || ""})`;
+    }
+    return `Dato curado de la fuente "${k.dataset}" (${k.ref}) — úsalo tal cual, no inventes ni agregues datos que no estén aquí:\n${JSON.stringify(k.item)}`;
+  }
+  if (k.tipo === "image") {
+    return `El usuario adjuntó ${k.cantidad} imagen(es). Descríbela(s) y orienta a partir de lo que observes; si no se ve con claridad, pídela de nuevo.`;
   }
   return JSON.stringify(k);
 }

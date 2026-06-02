@@ -50,6 +50,9 @@ class Table {
   find(predicate) {
     return [...this.rows.values()].filter(predicate);
   }
+  remove(id) {
+    return this.rows.delete(id);
+  }
   findOne(predicate) {
     return [...this.rows.values()].find(predicate);
   }

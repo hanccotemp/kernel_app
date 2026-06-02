@@ -55,3 +55,21 @@ function recortar(s, n) {
   s = (s || "").replace(/\s+/g, " ").trim();
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
+
+/**
+ * Derecho LGPD al borrado: elimina SOLO la memoria del par (app + usuario).
+ * No toca a otros usuarios ni a otras personalidades/apps.
+ * @returns {{conversaciones:number, mensajes:number}}
+ */
+export function borrarMemoriaUsuario(appId, usuarioId) {
+  const convs = db.conversaciones.find((c) => c.app_id === appId && c.usuario_id === usuarioId);
+  let mensajes = 0;
+  for (const c of convs) {
+    for (const m of db.mensajes.find((m) => m.conversacion_id === c.id)) {
+      db.mensajes.remove(m.id);
+      mensajes++;
+    }
+    db.conversaciones.remove(c.id);
+  }
+  return { conversaciones: convs.length, mensajes };
+}

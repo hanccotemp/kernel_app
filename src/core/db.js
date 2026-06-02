@@ -95,37 +95,47 @@ class DB {
     const url = process.env.DATABASE_URL;
     if (!url) return this;
 
-    const { PgStore } = await import("./pgstore.js");
-    this.store = new PgStore(url);
     const tablas = {
       usuario: this.usuarios,
       suscripcion: this.suscripciones,
       conversacion: this.conversaciones,
       mensaje: this.mensajes,
     };
-    await this.store.init(Object.keys(tablas));
 
-    if ((await this.store.count("usuario")) > 0) {
-      // PostgreSQL es la fuente de verdad: descartar el seed en memoria e hidratar.
-      for (const [name, tabla] of Object.entries(tablas)) {
-        tabla.rows.clear();
-        for (const row of await this.store.loadAll(name)) tabla.rows.set(row.id, row);
-      }
-      this.persistencia = "postgres (datos hidratados)";
-    } else {
-      // Primer arranque: subir el seed actual a PostgreSQL.
-      for (const [name, tabla] of Object.entries(tablas)) {
-        for (const row of tabla.all()) await this.store.upsert(name, row);
-      }
-      this.persistencia = "postgres (sembrado inicial)";
-    }
+    // Si PostgreSQL no responde, NO se cae el servidor: cae a modo memoria.
+    try {
+      const { PgStore } = await import("./pgstore.js");
+      this.store = new PgStore(url);
+      await this.store.init(Object.keys(tablas));
 
-    // Write-through: cada insert/update/remove se refleja en PostgreSQL.
-    for (const [name, tabla] of Object.entries(tablas)) {
-      tabla.persist = (accion, arg) => {
-        const p = accion === "remove" ? this.store.remove(name, arg) : this.store.upsert(name, arg);
-        p.catch((e) => console.error(`[pg] ${name}:`, e.message));
-      };
+      if ((await this.store.count("usuario")) > 0) {
+        // PostgreSQL es la fuente de verdad: descartar el seed en memoria e hidratar.
+        for (const [name, tabla] of Object.entries(tablas)) {
+          tabla.rows.clear();
+          for (const row of await this.store.loadAll(name)) tabla.rows.set(row.id, row);
+        }
+        this.persistencia = "postgres (datos hidratados)";
+      } else {
+        // Primer arranque: subir el seed actual a PostgreSQL.
+        for (const [name, tabla] of Object.entries(tablas)) {
+          for (const row of tabla.all()) await this.store.upsert(name, row);
+        }
+        this.persistencia = "postgres (sembrado inicial)";
+      }
+
+      // Write-through: cada insert/update/remove se refleja en PostgreSQL.
+      for (const [name, tabla] of Object.entries(tablas)) {
+        tabla.persist = (accion, arg) => {
+          const p = accion === "remove" ? this.store.remove(name, arg) : this.store.upsert(name, arg);
+          p.catch((e) => console.error(`[pg] ${name}:`, e.message));
+        };
+      }
+    } catch (e) {
+      this.store = undefined;
+      this.persistencia = `memoria (PostgreSQL no disponible: ${e.code || e.message})`;
+      console.warn(`\n  ⚠ PostgreSQL no disponible (${e.code || e.message}). Corriendo en MEMORIA.`);
+      console.warn(`  Para persistir, arranca PostgreSQL:`);
+      console.warn(`  .pg\\pgsql\\bin\\pg_ctl.exe -D .pgdata -o "-p 5432" -l .pgdata\\server.log start\n`);
     }
     return this;
   }

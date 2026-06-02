@@ -5,7 +5,7 @@
   "activo": true,
   "vertical": "fe",
   "idiomas": ["es", "pt", "en"],
-  "idioma_default": "pt",
+  "idioma_default": "es",
   "modulos": ["chat_ia", "onboarding", "suscripcion", "perfil", "contenido_dia", "plan_lectura"],
   "precios": {
     "plan_base": { "mensual": 14.9, "anual": 89.9, "moneda": "BRL" },

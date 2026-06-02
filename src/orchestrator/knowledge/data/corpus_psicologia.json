@@ -1,0 +1,36 @@
+{
+  "dataset": "psicologia",
+  "descripcion": "Técnicas de bienestar emocional de EJEMPLO (no clínicas, no reemplazan terapia). En producción: validadas por un psicólogo.",
+  "licencia": "demo",
+  "sin_resultado": {
+    "es": "No tengo una técnica específica para eso, pero estoy aquí para escucharte. Cuéntame más.",
+    "pt": "Não tenho uma técnica específica para isso, mas estou aqui para te ouvir. Conte-me mais.",
+    "en": "I don't have a specific technique for that, but I'm here to listen. Tell me more."
+  },
+  "items": [
+    {
+      "id": "ansiedad",
+      "temas": ["ansi", "angust", "nervios", "preocup", "estres", "estrés", "panico", "pánico", "anxious", "worry"],
+      "ref": "Técnica: respiración y grounding",
+      "es": { "tecnica": "Respiración 4-7-8 y anclaje 5-4-3-2-1", "pasos": ["Inhala 4s, sostén 7s, exhala 8s (x3)", "Nombra 5 cosas que ves, 4 que tocas, 3 que oyes, 2 que hueles, 1 que saboreas"] },
+      "pt": { "tecnica": "Respiração 4-7-8 e ancoragem 5-4-3-2-1", "pasos": ["Inspire 4s, segure 7s, expire 8s (x3)", "Nomeie 5 coisas que vê, 4 que toca, 3 que ouve, 2 que cheira, 1 que saboreia"] },
+      "en": { "tecnica": "4-7-8 breathing and 5-4-3-2-1 grounding", "pasos": ["Inhale 4s, hold 7s, exhale 8s (x3)", "Name 5 things you see, 4 you touch, 3 you hear, 2 you smell, 1 you taste"] }
+    },
+    {
+      "id": "tristeza",
+      "temas": ["triste", "desanim", "deprim", "solo", "vac", "llor", "sad", "down", "lonely"],
+      "ref": "Técnica: activación conductual y autocompasión",
+      "es": { "tecnica": "Un pequeño paso + hablarte con amabilidad", "pasos": ["Elige UNA acción mínima y agradable hoy (una caminata, una llamada)", "Háblate como le hablarías a un buen amigo que sufre"] },
+      "pt": { "tecnica": "Ativação comportamental e autocompaixão", "pasos": ["Escolha UMA ação mínima e agradável hoje (uma caminhada, uma ligação)", "Fale consigo como falaria com um bom amigo que sofre"] },
+      "en": { "tecnica": "Behavioral activation and self-compassion", "pasos": ["Pick ONE small, pleasant action today (a walk, a call)", "Talk to yourself as you would to a good friend who is hurting"] }
+    },
+    {
+      "id": "sueno",
+      "temas": ["dorm", "sueno", "sueño", "insomni", "descans", "sleep", "insomnia"],
+      "ref": "Técnica: higiene del sueño",
+      "es": { "tecnica": "Rutina de sueño", "pasos": ["Misma hora para dormir y despertar", "Sin pantallas 1h antes; luz tenue", "Si no duermes en 20 min, levántate y haz algo tranquilo"] },
+      "pt": { "tecnica": "Higiene do sono", "pasos": ["Mesmo horário para dormir e acordar", "Sem telas 1h antes; luz baixa", "Se não dormir em 20 min, levante-se e faça algo calmo"] },
+      "en": { "tecnica": "Sleep hygiene", "pasos": ["Same sleep and wake time", "No screens 1h before; dim light", "If not asleep in 20 min, get up and do something calm"] }
+    }
+  ]
+}

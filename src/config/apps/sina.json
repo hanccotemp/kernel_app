@@ -5,7 +5,7 @@
   "activo": true,
   "vertical": "astrologia",
   "idiomas": ["es", "pt", "en"],
-  "idioma_default": "pt",
+  "idioma_default": "es",
   "modulos": ["chat_ia", "onboarding", "suscripcion", "perfil", "contenido_dia", "mapa_natal", "tarot", "compatibilidad"],
   "precios": {
     "plan_base": { "mensual": 19.9, "anual": 119.9, "moneda": "BRL" },

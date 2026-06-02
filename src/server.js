@@ -37,6 +37,7 @@ app.get("/api/health", (_req, res) => {
     provider: getProvider().name,
     providersDisponibles: listProviders(),
     cache: cache.stats(),
+    persistencia: db.persistencia,
     apps: db.apps.find((a) => a.activo).map((a) => a.id),
   });
 });
@@ -122,9 +123,12 @@ wss.on("connection", (ws) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// Conecta la persistencia (PostgreSQL si hay DATABASE_URL) antes de escuchar.
+await db.init();
 server.listen(PORT, () => {
   console.log(`\n  Núcleo AI-first escuchando en http://localhost:${PORT}`);
   console.log(`  Proveedor de IA: ${getProvider().name}  (AI_PROVIDER para cambiar)`);
+  console.log(`  Persistencia: ${db.persistencia}`);
   console.log(`  Apps activas: ${db.apps.find((a) => a.activo).map((a) => a.id).join(", ")}`);
   console.log(`  Cliente de demo: http://localhost:${PORT}/\n`);
 });

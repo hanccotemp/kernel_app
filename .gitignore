@@ -19,3 +19,8 @@ Thumbs.db
 
 # Claude Code (config local)
 .claude/
+
+# PostgreSQL portable y datos locales (no subir binarios ni datos)
+.pg/
+.pgdata/
+*.zip

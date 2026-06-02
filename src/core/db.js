@@ -35,6 +35,7 @@ class Table {
     const id = row.id ?? genId(this.name.slice(0, 3));
     const record = { ...row, id };
     this.rows.set(id, record);
+    if (this.persist) this.persist("upsert", record);
     return record;
   }
   get(id) {
@@ -45,13 +46,16 @@ class Table {
     if (!cur) return undefined;
     const next = { ...cur, ...patch };
     this.rows.set(id, next);
+    if (this.persist) this.persist("upsert", next);
     return next;
   }
   find(predicate) {
     return [...this.rows.values()].filter(predicate);
   }
   remove(id) {
-    return this.rows.delete(id);
+    const ok = this.rows.delete(id);
+    if (this.persist) this.persist("remove", id);
+    return ok;
   }
   findOne(predicate) {
     return [...this.rows.values()].find(predicate);
@@ -79,6 +83,51 @@ class DB {
 
     this._loadApps();
     this._seed();
+    this.persistencia = "memoria"; // se actualiza en init() si hay PostgreSQL
+  }
+
+  /**
+   * Conecta la persistencia (PostgreSQL) si hay DATABASE_URL. Mantiene la misma
+   * interfaz: el resto del núcleo no cambia. Idempotente y opcional (sin
+   * DATABASE_URL, el sistema corre 100% en memoria como antes).
+   */
+  async init() {
+    const url = process.env.DATABASE_URL;
+    if (!url) return this;
+
+    const { PgStore } = await import("./pgstore.js");
+    this.store = new PgStore(url);
+    const tablas = {
+      usuario: this.usuarios,
+      suscripcion: this.suscripciones,
+      conversacion: this.conversaciones,
+      mensaje: this.mensajes,
+    };
+    await this.store.init(Object.keys(tablas));
+
+    if ((await this.store.count("usuario")) > 0) {
+      // PostgreSQL es la fuente de verdad: descartar el seed en memoria e hidratar.
+      for (const [name, tabla] of Object.entries(tablas)) {
+        tabla.rows.clear();
+        for (const row of await this.store.loadAll(name)) tabla.rows.set(row.id, row);
+      }
+      this.persistencia = "postgres (datos hidratados)";
+    } else {
+      // Primer arranque: subir el seed actual a PostgreSQL.
+      for (const [name, tabla] of Object.entries(tablas)) {
+        for (const row of tabla.all()) await this.store.upsert(name, row);
+      }
+      this.persistencia = "postgres (sembrado inicial)";
+    }
+
+    // Write-through: cada insert/update/remove se refleja en PostgreSQL.
+    for (const [name, tabla] of Object.entries(tablas)) {
+      tabla.persist = (accion, arg) => {
+        const p = accion === "remove" ? this.store.remove(name, arg) : this.store.upsert(name, arg);
+        p.catch((e) => console.error(`[pg] ${name}:`, e.message));
+      };
+    }
+    return this;
   }
 
   /** Carga cada app desde su JSON de configuración (multi-tenant). */

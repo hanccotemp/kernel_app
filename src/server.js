@@ -28,7 +28,17 @@ import { auth } from "./middleware/auth.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // 10mb para entrada multimodal (imágenes base64)
+
+// CORS: permite que el frontend (Flutter Web en otro puerto) consuma el API.
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type, X-App-Id, X-User-Id");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 app.get("/api/health", (_req, res) => {

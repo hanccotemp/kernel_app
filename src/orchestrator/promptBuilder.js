@@ -45,6 +45,12 @@ export function construirPrompt({ personaje, contextoUsuario, conocimiento, memo
     partes.push(`CONOCIMIENTO CURADO (datos reales — NO los inventes, úsalos tal cual):\n${renderConocimiento(conocimiento)}`);
   }
 
+  // Datos fijos del personaje (p. ej. catálogo/precios): siempre presentes, no se inventan.
+  const fijo = personaje?.capa3_conocimiento_curado?.fijo;
+  if (fijo) {
+    partes.push(`DATOS FIJOS (úsalos tal cual, NUNCA inventes precios, datos ni equivalencias; preséntalos en el idioma del usuario):\n${typeof fijo === "string" ? fijo : JSON.stringify(fijo)}`);
+  }
+
   if (memoria) {
     partes.push(`MEMORIA DE CONVERSACIONES PREVIAS: ${memoria}`);
   }

@@ -92,6 +92,20 @@ class _LoginScreenState extends State<LoginScreen> {
   Color get _color => hexColor(widget.cfg['piel']?['color_primario'], const Color(0xFF1F6F5C));
   String get _icono => widget.cfg['piel']?['icono'] ?? '✨';
   String get _nombreApp => widget.cfg['nombre'] ?? kAppId;
+  String get _subtitulo {
+    switch (widget.cfg['vertical']) {
+      case 'astrologia':
+        return 'Tu guía de astrología. Entra con tu nombre.';
+      case 'fe':
+        return 'Tu compañía de fe. Entra con tu nombre.';
+      case 'psicologia':
+        return 'Tu espacio de bienestar emocional. Entra con tu nombre.';
+      case 'heladeria':
+        return 'Helados artesanales de fruta orgánica. Entra con tu nombre.';
+      default:
+        return 'Entra con tu nombre.';
+    }
+  }
 
   void _entrarComo(Map<String, String> p) {
     _nombre.text = p['nombre'] ?? '';
@@ -140,10 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
               Text(_nombreApp, style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: _color)),
               const SizedBox(height: 4),
-              Text(
-                _esAstro ? 'Tu guía de astrología. Entra con tu nombre.' : 'Tu compañía de fe. Entra con tu nombre.',
-                style: const TextStyle(color: Colors.black54), textAlign: TextAlign.center,
-              ),
+              Text(_subtitulo, style: const TextStyle(color: Colors.black54), textAlign: TextAlign.center),
               const SizedBox(height: 28),
               TextField(
                 controller: _nombre,
@@ -230,12 +241,24 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _lang = widget.cfg['idioma_default'] ?? 'es';
-    _mensajes.add(Mensaje(
-      _esAstro
-          ? 'Hola, ${widget.nombre}. Soy $_nombreApp. Cuéntame qué quieres explorar y miramos los astros.'
-          : 'Hola, ${widget.nombre}. Soy $_nombreApp, estoy aquí para acompañarte. ¿Cómo está tu corazón hoy?',
-      false,
-    ));
+    String saludo;
+    switch (widget.cfg['vertical']) {
+      case 'astrologia':
+        saludo = 'Hola, ${widget.nombre}. Soy $_nombreApp. Cuéntame qué quieres explorar y miramos los astros.';
+        break;
+      case 'fe':
+        saludo = 'Hola, ${widget.nombre}. Soy $_nombreApp, estoy aquí para acompañarte. ¿Cómo está tu corazón hoy?';
+        break;
+      case 'psicologia':
+        saludo = 'Hola, ${widget.nombre}. Soy $_nombreApp. Este es un espacio seguro y sin juicios. ¿Cómo te sientes hoy?';
+        break;
+      case 'heladeria':
+        saludo = '¡Hola, ${widget.nombre}! Soy $_nombreApp 🍦 Tenemos helados artesanales de fruta orgánica. ¿Qué sabor se te antoja hoy?';
+        break;
+      default:
+        saludo = 'Hola, ${widget.nombre}. Soy $_nombreApp. ¿En qué te puedo acompañar?';
+    }
+    _mensajes.add(Mensaje(saludo, false));
   }
 
   Future<void> _enviar() async {
